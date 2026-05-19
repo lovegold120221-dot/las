@@ -519,6 +519,17 @@ export function useLiveApi({
            responsePayload = { status: `Opened ${url} in a new tab` };
         }
 
+         if (fc.name === 'open_eburon_asset_studio') {
+             responsePayload = { status: `Eburon Asset + Document Studio opened successfully` };
+             const uiState = await import('../../lib/state');
+             const { BRAND_ASSETS_HTML } = await import('../../lib/brand-assets');
+             uiState.useUI.getState().setIsGenerating(true);
+             uiState.useUI.getState().setActiveWorkspaceResult({
+                artifact: { title: "Asset & Document Studio", type: "html", content: BRAND_ASSETS_HTML }
+             });
+             uiState.useUI.getState().setIsGenerating(false);
+         }
+
          if (fc.name === 'create_html_document' || fc.name === 'create_json_file' || fc.name === 'generate_artifact' || fc.name === 'create_markdown_document' || fc.name === 'create_chart_spec' || fc.name === 'create_project_brief' || fc.name === 'create_checklist') {
            const { title, type, content, language, data, items } = fc.args as any;
            

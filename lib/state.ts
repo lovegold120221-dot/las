@@ -216,6 +216,70 @@ export const workspaceTools: FunctionCall[] = [
       required: ["overlay_id"]
     }
   },
+  // Start of Artifact Tools
+  {
+    name: "open_eburon_asset_studio",
+    description: "Opens the complete Eburon AI Asset + Document Studio. Use this when the user asks for brand assets, documents studio, or mentions creating all pages and tools from the icons.",
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+    parameters: { type: "OBJECT", properties: {} }
+  },
+  {
+    name: "create_html_document",
+    description: "Generates a complete standalone HTML document (like a contract, invoice, or dashboard). Use this to create complex visual documents.",
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        title: { type: "STRING", description: "The title of the document" },
+        content: { type: "STRING", description: "The full HTML content of the document" }
+      },
+      required: ["title", "content"]
+    }
+  },
+  {
+    name: "create_markdown_document",
+    description: "Generates a Markdown document for reports, plans, and instructions.",
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        title: { type: "STRING", description: "The title of the markdown document" },
+        content: { type: "STRING", description: "The markdown content" }
+      },
+      required: ["title", "content"]
+    }
+  },
+  {
+    name: "create_json_file",
+    description: "Generates a JSON file to output raw data.",
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        title: { type: "STRING", description: "The title/filename of the JSON" },
+        content: { type: "STRING", description: "The stringified JSON content" }
+      },
+      required: ["title", "content"]
+    }
+  },
+  {
+    name: "create_chart_spec",
+    description: "Generates a chart specification.",
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        title: { type: "STRING", description: "The chart title" },
+        data: { type: "OBJECT", description: "The JSON data object for the chart" }
+      },
+      required: ["title", "data"]
+    }
+  },
   {
     name: "generate_artifact",
     description: "Generates a visual document or data artifact (like a report, code snippet, chart, or structured document) to be displayed to the user. Use this when the user asks to create a document, write code, or generate a detailed report.",
@@ -429,7 +493,7 @@ export const useTools = create<{
   removeTool: (toolName: string) => void;
   updateTool: (oldName: string, updatedTool: FunctionCall) => void;
 }>(set => ({
-  tools: personalAssistantTools,
+  tools: toolsets['personal-assistant'],
   template: 'personal-assistant',
   setTemplate: (template: Template) => {
     set({ tools: toolsets[template], template });
