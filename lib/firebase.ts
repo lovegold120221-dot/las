@@ -26,7 +26,6 @@ provider.addScope('https://www.googleapis.com/auth/gmail.send');
 provider.addScope('https://www.googleapis.com/auth/chat.messages');
 provider.addScope('https://www.googleapis.com/auth/chat.spaces');
 provider.addScope('https://www.googleapis.com/auth/meetings.space.created');
-provider.addScope('https://www.googleapis.com/auth/picker');
 
 let isSigningIn = false;
 let cachedAccessToken: string | null = null;
