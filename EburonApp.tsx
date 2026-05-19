@@ -110,6 +110,7 @@ export default function EburonApp() {
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [isPickerLoaded, setIsPickerLoaded] = useState(false);
   const [isVideoFullScreen, setIsVideoFullScreen] = useState(false);
+  const [isMeetOpen, setIsMeetOpen] = useState(false);
 
   useEffect(() => {
     const loadPicker = () => {
@@ -430,7 +431,7 @@ Output only natural spoken text. No stage directions, no brackets, no role label
   };
 
   const handleToolAction = (toolId: string) => {
-    if (['history', 'tools', 'profile', 'settings', 'whatsapp', 'scanner', 'meet', 'location', 'map', 'picker'].includes(toolId)) {
+    if (['history', 'tools', 'profile', 'settings', 'whatsapp', 'scanner', 'location', 'map', 'picker'].includes(toolId)) {
       if (toolId == 'location' || toolId == 'map') {
          handleLocationSkillClick();
          return;
@@ -440,6 +441,9 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         return;
       }
       setActiveOverlay(toolId);
+    } else if (toolId === 'meet') {
+        setIsMeetOpen(true);
+        startWebcam();
     } else {
       const prompts: Record<string, string> = {
         'tasks': "Pull up my Google Tasks and give me a quick overview of what's on my list.",
@@ -667,17 +671,13 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         </nav>
       </div>
 
-      <div className={`video-wrapper ${stream ? 'block' : 'hidden'}`} style={{ position: 'fixed', bottom: '90px', right: '20px', width: '140px', zIndex: 10 }}>
-        <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '12px', border: '2px solid var(--border-color)', backgroundColor: 'black' }} />
-        <button onClick={() => setIsVideoFullScreen(true)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', color: 'white', border: 'none', padding: '4px', cursor: 'pointer' }}>
-            <Maximize2 size={12} />
-        </button>
-      </div>
-
-      {isVideoFullScreen && (
-        <div className="full-screen-video-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1000, backgroundColor: 'black' }}>
+      {isMeetOpen && (
+        <div className="full-page-overlay meet-overlay active" style={{ backgroundColor: 'black', zIndex: 2000 }}>
+          <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 2001, display: 'flex', gap: '10px' }}>                
+            <button onClick={() => { if(isScreenShareActive) stopStream(); else startScreenShare(); }} style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><Cast size={24} color={isScreenShareActive ? 'var(--accent-active)' : "white"}/></button>
+            <button onClick={() => { stopStream(); setIsMeetOpen(false); }} style={{ background: 'rgba(255,0,0,0.5)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><X size={24} color="white"/></button>
+          </div>
           <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <button onClick={() => setIsVideoFullScreen(false)} style={{ position: 'absolute', top: 20, right: 20, zIndex: 1001, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><X size={24} color="white"/></button>
         </div>
       )}
 
@@ -694,13 +694,35 @@ Output only natural spoken text. No stage directions, no brackets, no role label
              <div className="artifact-viewer" style={{ backgroundColor: 'white', color: 'black', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                 {activeWorkspaceResult.artifact.type === 'markdown' && (
                   <div className="markdown-body">
+                    <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+                      <button className="pill-btn" onClick={() => {
+                        const blob = new Blob([activeWorkspaceResult.artifact.content], { type: 'text/markdown' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${activeWorkspaceResult.artifact.title || 'document'}.md`;
+                        a.click();
+                      }}>Download Markdown</button>
+                    </div>
                     <ReactMarkdown>{activeWorkspaceResult.artifact.content}</ReactMarkdown>
                   </div>
                 )}
                 {activeWorkspaceResult.artifact.type === 'code' && (
-                  <pre style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px', overflowX: 'auto' }}>
-                    <code>{activeWorkspaceResult.artifact.content}</code>
-                  </pre>
+                  <div className="artifact-viewer">
+                    <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
+                        <button className="pill-btn" onClick={() => {
+                            const blob = new Blob([activeWorkspaceResult.artifact.content], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${activeWorkspaceResult.artifact.title || 'code'}.txt`;
+                            a.click();
+                        }}>Download Code</button>
+                    </div>
+                    <pre style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px', overflowX: 'auto' }}>
+                      <code>{activeWorkspaceResult.artifact.content}</code>
+                    </pre>
+                  </div>
                 )}
                 {activeWorkspaceResult.artifact.type === 'structured' && (
                   <div style={{ whiteSpace: 'pre-wrap' }}>{activeWorkspaceResult.artifact.content}</div>
