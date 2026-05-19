@@ -692,6 +692,9 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         <div className="overlay-content" style={{ overflowY: 'auto', padding: '24px' }}>
            {activeWorkspaceResult?.artifact ? (
              <div className="artifact-viewer" style={{ backgroundColor: 'white', color: 'black', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                {activeWorkspaceResult.artifact.type === 'html' && (
+                  <iframe srcDoc={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="HTML Preview" />
+                )}
                 {activeWorkspaceResult.artifact.type === 'markdown' && (
                   <div className="markdown-body">
                     <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
