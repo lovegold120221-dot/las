@@ -1,7 +1,17 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+import firebaseConfigFromFile from '../firebase-applet-config.json';
+
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY || firebaseConfigFromFile.apiKey,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || firebaseConfigFromFile.authDomain,
+  projectId: process.env.FIREBASE_PROJECT_ID || firebaseConfigFromFile.projectId,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET || firebaseConfigFromFile.storageBucket,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || firebaseConfigFromFile.messagingSenderId,
+  appId: process.env.FIREBASE_APP_ID || firebaseConfigFromFile.appId,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID || firebaseConfigFromFile.measurementId,
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
