@@ -189,16 +189,17 @@ export default function EburonApp() {
           try {
             userDoc = await getDoc(docRef);
           } catch (e: any) {
-            console.warn('Firestore getDoc warning:', e.message);
-            // If the document doesn't exist, it's fine for a new user.
-            // If it's an offline error, we try to retry once.
-            if (e.code === 'unavailable' || e.message.includes('offline')) {
+            // Do not log "Requested entity was not found" or "client is offline" errors as scary warnings
+            if (e.code === 'unavailable' || e.message?.includes('offline')) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 try {
                     userDoc = await getDoc(docRef);
-                } catch (e2) {
-                    console.error('Firestore getDoc retry error:', e2);
+                } catch (e2: any) {
+                    // Suppress "Firestore getDoc retry error"
+                    console.log('Firebase offline, continuing with local session.');
                 }
+            } else if (!e.message?.includes('Requested entity was not found')) {
+               console.log('Firestore getDoc notice:', e.message);
             }
           }
           if (userDoc && userDoc.exists()) {

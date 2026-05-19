@@ -6,13 +6,20 @@ import { useUI } from '../lib/state';
 
 const DownloadButton = ({ content, title, type, ext }: { content: string, title: string, type: string, ext: string }) => (
   <button className="flex items-center gap-2 pill-btn bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" onClick={() => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
+    let url;
+    if (type === 'application/pdf' && content.startsWith('data:')) {
+      url = content;
+    } else {
+      const blob = new Blob([content], { type });
+      url = URL.createObjectURL(blob);
+    }
     const a = document.createElement('a');
     a.href = url;
     a.download = `${title?.replace(/[^a-z0-9]/gi, '_') || 'document'}.${ext}`;
     a.click();
-    URL.revokeObjectURL(url);
+    if (!content.startsWith('data:')) {
+      URL.revokeObjectURL(url);
+    }
   }}>
     <Download size={16} /> Download {ext.toUpperCase()}
   </button>
@@ -60,8 +67,20 @@ export const ArtifactOverlay: React.FC = () => {
                   <DownloadButton 
                     content={activeWorkspaceResult.artifact.content}
                     title={activeWorkspaceResult.artifact.title || 'artifact'}
-                    type={activeWorkspaceResult.artifact.type === 'markdown' ? 'text/markdown' : 'text/plain'}
-                    ext={activeWorkspaceResult.artifact.type === 'markdown' ? 'md' : 'txt'}
+                    type={
+                      activeWorkspaceResult.artifact.type === 'markdown' ? 'text/markdown' : 
+                      activeWorkspaceResult.artifact.type === 'pdf' ? 'application/pdf' : 
+                      activeWorkspaceResult.artifact.type === 'json' ? 'application/json' :
+                      activeWorkspaceResult.artifact.type === 'html' ? 'text/html' :
+                      'text/plain'
+                    }
+                    ext={
+                      activeWorkspaceResult.artifact.type === 'markdown' ? 'md' : 
+                      activeWorkspaceResult.artifact.type === 'pdf' ? 'pdf' : 
+                      activeWorkspaceResult.artifact.type === 'json' ? 'json' :
+                      activeWorkspaceResult.artifact.type === 'html' ? 'html' :
+                      activeWorkspaceResult.artifact.type === 'code' ? 'txt' : 'text'
+                    }
                   />
                 </div>
                 
@@ -76,9 +95,19 @@ export const ArtifactOverlay: React.FC = () => {
                     <ReactMarkdown>{activeWorkspaceResult.artifact.content}</ReactMarkdown>
                   </div>
                 )}
-                {activeWorkspaceResult.artifact.type === 'structured' && (
+                {(activeWorkspaceResult.artifact.type === 'structured' || activeWorkspaceResult.artifact.type === 'json') && (
                   <pre className="p-4 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono text-gray-800">
-                    {JSON.stringify(JSON.parse(activeWorkspaceResult.artifact.content), null, 2)}
+                    {(() => {
+                      const content = activeWorkspaceResult.artifact.content;
+                      if (typeof content === 'string') {
+                        try {
+                          return JSON.stringify(JSON.parse(content), null, 2);
+                        } catch (e) {
+                          return content;
+                        }
+                      }
+                      return JSON.stringify(content, null, 2);
+                    })()}
                   </pre>
                 )}
                 {activeWorkspaceResult.artifact.type === 'code' && (

@@ -274,9 +274,13 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
   protected onError(e: ErrorEvent) {
     this._status = 'disconnected';
-    console.error('error:', e);
+    if (e.message && e.message.includes('error')) {
+       console.error('Live API Error:', e.message);
+    } else {
+       console.error('Live API Error Event:', e);
+    }
 
-    const message = `Could not connect to GenAI Live: ${e.message}`;
+    const message = `Could not connect to GenAI Live: ${e.message || 'Unknown error'}`;
     this.log(`server.${e.type}`, message);
     this.emit('error', e);
   }
