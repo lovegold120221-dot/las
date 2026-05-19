@@ -519,34 +519,44 @@ export function useLiveApi({
            responsePayload = { status: `Opened ${url} in a new tab` };
         }
 
-        if (fc.name === 'create_html_document' || fc.name === 'create_json_file' || fc.name === 'generate_artifact' || fc.name === 'create_markdown_document' || fc.name === 'create_chart_spec' || fc.name === 'create_project_brief' || fc.name === 'create_checklist') {
+         if (fc.name === 'create_html_document' || fc.name === 'create_json_file' || fc.name === 'generate_artifact' || fc.name === 'create_markdown_document' || fc.name === 'create_chart_spec' || fc.name === 'create_project_brief' || fc.name === 'create_checklist') {
            const { title, type, content, language, data, items } = fc.args as any;
-           let actualType = type;
-           let actualContent = content;
            
-           if (fc.name === 'create_html_document') actualType = 'html';
-           if (fc.name === 'create_json_file') actualType = 'json';
-           if (fc.name === 'create_markdown_document') actualType = 'markdown';
-           if (fc.name === 'create_chart_spec') {
-               actualType = 'chart';
-               actualContent = JSON.stringify(data);
+           try {
+             let actualType = type;
+             let actualContent = content;
+             
+             if (fc.name === 'create_html_document') actualType = 'html';
+             if (fc.name === 'create_json_file') actualType = 'json';
+             if (fc.name === 'create_markdown_document') actualType = 'markdown';
+             if (fc.name === 'create_chart_spec') {
+                 actualType = 'chart';
+                 actualContent = JSON.stringify(data);
+             }
+             if (fc.name === 'create_project_brief') actualType = 'markdown';
+             if (fc.name === 'create_checklist') {
+                 actualType = 'markdown';
+                 actualContent = `# ${title}\n\n` + (items ? items.map((it: string) => `- [ ] ${it}`).join('\n') : '');
+             }
+             
+             if (!actualType) actualType = 'structured';
+             
+             console.log('Generating artifact:', { title, type: actualType });
+             
+             const uiState = await import('../../lib/state');
+             uiState.useUI.getState().setIsGenerating(true);
+             uiState.useUI.getState().setActiveWorkspaceResult({
+                artifact: { title, type: actualType, content: actualContent, language }
+             });
+             uiState.useUI.getState().setIsGenerating(false);
+             
+             responsePayload = { status: `${actualType.toUpperCase()} artifact generated successfully`, title };
+           } catch (e: any) {
+             console.error('Artifact generation failed:', e);
+             responsePayload = { error: `Failed to generate ${fc.name}: ${e.message}` };
+             const uiState = await import('../../lib/state');
+             uiState.useUI.getState().setIsGenerating(false);
            }
-           if (fc.name === 'create_project_brief') actualType = 'markdown';
-           if (fc.name === 'create_checklist') {
-               actualType = 'markdown';
-               actualContent = `# ${title}\n\n` + items.map((it: string) => `- [ ] ${it}`).join('\n');
-           }
-           
-           if (!actualType) actualType = 'structured';
-           
-           responsePayload = { status: `${actualType.toUpperCase()} artifact generated successfully`, title };
-           const uiState = await import('../../lib/state');
-           uiState.useUI.getState().setIsGenerating(true);
-           console.log('Generating artifact:', { title, type: actualType });
-           uiState.useUI.getState().setActiveWorkspaceResult({
-              artifact: { title, type: actualType, content: actualContent, language }
-           });
-           uiState.useUI.getState().setIsGenerating(false);
         }
 
         if (fc.name === 'get_user_location') {

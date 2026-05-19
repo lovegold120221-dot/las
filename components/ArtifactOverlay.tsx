@@ -65,6 +65,9 @@ export const ArtifactOverlay: React.FC = () => {
                   />
                 </div>
                 
+                {activeWorkspaceResult.artifact.type === 'pdf' && (
+                  <iframe src={activeWorkspaceResult.artifact.content} className="w-full h-[60vh] border rounded-lg" title="PDF Preview" />
+                )}
                 {activeWorkspaceResult.artifact.type === 'html' && (
                   <iframe srcDoc={activeWorkspaceResult.artifact.content} className="w-full h-[60vh] border rounded-lg" title="HTML Preview" />
                 )}
