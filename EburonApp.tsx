@@ -9,7 +9,7 @@ import { LANGUAGES } from './lib/languages';
 import { auth, db, handleFirestoreError, OperationType, initAuth, googleSignIn, getAccessToken } from './lib/firebase';
 import firebaseConfig from './firebase-applet-config.json';
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDocFromServer, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { 
   User, ListChecks, Calendar, FolderOpen, Search, Signature, 
   Building2, Video, MessageSquare, Settings, Wrench, History, 
@@ -179,7 +179,20 @@ export default function EburonApp() {
         // Fetch memories from Firestore
         const path = `users/${user.uid}`;
         try {
-          const userDoc = await getDocFromServer(doc(db, 'users', user.uid));
+          const docRef = doc(db, 'users', user.uid);
+          let userDoc;
+          try {
+            userDoc = await getDoc(docRef);
+          } catch (e: any) {
+            console.error('Firestore getDoc error:', e);
+            // Try one more time if it's an offline error
+            if (e.code === 'unavailable' || e.message.includes('offline')) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                userDoc = await getDoc(docRef);
+            } else {
+                throw e;
+            }
+          }
           if (userDoc.exists()) {
             const data = userDoc.data();
             if (data.memories) {
