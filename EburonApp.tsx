@@ -692,7 +692,15 @@ Output only natural spoken text. No stage directions, no brackets, no role label
       </AnimatePresence>
 
       {/* Workspace & Artifact Overlay */}
-      <div id="overlay-workspace" className={`full-page-overlay ${activeWorkspaceResult ? 'active' : ''}`}>
+      <AnimatePresence>
+      {activeWorkspaceResult && (
+        <motion.div 
+          id="overlay-workspace"
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: '100%', opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+          className="full-page-overlay active">
         <div className="overlay-header">
           <div className="overlay-title">
             {activeWorkspaceResult?.artifact ? `Artifact: ${activeWorkspaceResult.artifact.title}` : 'Workspace Data'}
@@ -704,6 +712,9 @@ Output only natural spoken text. No stage directions, no brackets, no role label
              <div className="artifact-viewer" style={{ backgroundColor: 'white', color: 'black', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                 {activeWorkspaceResult.artifact.type === 'html' && (
                   <iframe srcDoc={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="HTML Preview" />
+                )}
+                {activeWorkspaceResult.artifact.type === 'pdf' && (
+                  <iframe src={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="PDF Preview" />
                 )}
                 {activeWorkspaceResult.artifact.type === 'markdown' && (
                   <div className="markdown-body">
@@ -754,7 +765,9 @@ Output only natural spoken text. No stage directions, no brackets, no role label
              </pre>
            )}
         </div>
-      </div>
+        </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* Profile Overlay */}
       <div id="overlay-profile" className={`full-page-overlay ${activeOverlay === 'profile' ? 'active' : ''}`}>
