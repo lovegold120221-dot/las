@@ -5,6 +5,7 @@
 
 import { LiveAPIProvider } from './contexts/LiveAPIContext';
 import EburonApp from './EburonApp';
+import { GooglePicker } from './components/GooglePicker';
 
 const API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -19,6 +20,7 @@ function App() {
   return (
     <LiveAPIProvider apiKey={API_KEY}>
       <EburonApp />
+      <GooglePicker />
     </LiveAPIProvider>
   );
 }

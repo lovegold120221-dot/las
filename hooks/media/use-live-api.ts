@@ -149,6 +149,49 @@ export function useLiveApi({
            }
         }
 
+        if (fc.name === 'list_keep_notes') {
+            const token = await getAccessToken();
+            if (!token) {
+                responsePayload = { error: 'No Google access token found.' };
+            } else {
+                try {
+                    const res = await fetch(`https://keep.googleapis.com/v1/notes`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    responsePayload = await res.json();
+                } catch (e: any) {
+                    responsePayload = { error: e.message };
+                }
+            }
+        }
+
+        if (fc.name === 'create_keep_note') {
+            const { title, text } = fc.args as any;
+            const token = await getAccessToken();
+            if (!token) {
+                responsePayload = { error: 'No Google access token found.' };
+            } else {
+                try {
+                    const res = await fetch(`https://keep.googleapis.com/v1/notes`, {
+                        method: 'POST',
+                        headers: { 
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ title, body: { text: { text } } })
+                    });
+                    responsePayload = await res.json();
+                } catch (e: any) {
+                    responsePayload = { error: e.message };
+                }
+            }
+        }
+
+        if (fc.name === 'open_google_picker') {
+            responsePayload = { status: 'Triggering UI to open Google Picker. Please ask the user to select a file/item and await their response.' };
+            window.dispatchEvent(new CustomEvent('OPEN_GOOGLE_PICKER'));
+        }
+
         if (fc.name === 'list_drive_files') {
             const { pageSize = 10, q = '' } = fc.args as any;
             const token = await getAccessToken();

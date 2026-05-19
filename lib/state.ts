@@ -89,6 +89,40 @@ export const workspaceTools: FunctionCall[] = [
     scheduling: FunctionResponseScheduling.INTERRUPT,
   },
   {
+    name: "list_keep_notes",
+    description: "Lists the user's notes from Google Keep.",
+    parameters: {
+      type: "OBJECT",
+      properties: {}
+    },
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+  },
+  {
+    name: "create_keep_note",
+    description: "Creates a note in Google Keep.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        title: { type: "STRING" },
+        text: { type: "STRING" }
+      },
+      required: ["text"]
+    },
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+  },
+  {
+    name: "open_google_picker",
+    description: "Opens the Google File Picker UI for the user to select files from Google Drive.",
+    parameters: {
+      type: "OBJECT",
+      properties: {}
+    },
+    isEnabled: true,
+    scheduling: FunctionResponseScheduling.INTERRUPT,
+  },
+  {
     name: "create_meet_link",
     description: "Creates a Google Meet link by scheduling a quick calendar event.",
     parameters: {
