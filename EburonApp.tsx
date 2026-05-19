@@ -15,7 +15,7 @@ import {
   Building2, Video, MessageSquare, Settings, Wrench, History, 
   Trash2, QrCode, MapPin, Brain, Presentation, Mail, Table, 
   FileStack, Paperclip, Send, Mic, Cast, X, Check, Save, RotateCcw,
-  Plug, Lock, Pencil
+  Plug, Lock, Pencil, Maximize2
 } from 'lucide-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -109,6 +109,7 @@ export default function EburonApp() {
   const [clientVolume, setClientVolume] = useState(0);
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [isPickerLoaded, setIsPickerLoaded] = useState(false);
+  const [isVideoFullScreen, setIsVideoFullScreen] = useState(false);
 
   useEffect(() => {
     const loadPicker = () => {
@@ -666,7 +667,19 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         </nav>
       </div>
 
-      <video ref={videoRef} autoPlay playsInline muted style={{ position: 'fixed', bottom: '90px', right: '20px', width: '140px', borderRadius: '12px', border: '2px solid var(--border-color)', zIndex: 10, display: stream ? 'block' : 'none' }} />
+      <div className={`video-wrapper ${stream ? 'block' : 'hidden'}`} style={{ position: 'fixed', bottom: '90px', right: '20px', width: '140px', zIndex: 10 }}>
+        <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '12px', border: '2px solid var(--border-color)', backgroundColor: 'black' }} />
+        <button onClick={() => setIsVideoFullScreen(true)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', color: 'white', border: 'none', padding: '4px', cursor: 'pointer' }}>
+            <Maximize2 size={12} />
+        </button>
+      </div>
+
+      {isVideoFullScreen && (
+        <div className="full-screen-video-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1000, backgroundColor: 'black' }}>
+          <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <button onClick={() => setIsVideoFullScreen(false)} style={{ position: 'absolute', top: 20, right: 20, zIndex: 1001, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><X size={24} color="white"/></button>
+        </div>
+      )}
 
       {/* Workspace & Artifact Overlay */}
       <div id="overlay-workspace" className={`full-page-overlay ${activeWorkspaceResult ? 'active' : ''}`}>
