@@ -540,6 +540,7 @@ export function useLiveApi({
            responsePayload = { status: `${actualType.toUpperCase()} artifact generated successfully`, title };
            const uiState = await import('../../lib/state');
            uiState.useUI.getState().setIsGenerating(true);
+           console.log('Generating artifact:', { title, type: actualType });
            uiState.useUI.getState().setActiveWorkspaceResult({
               artifact: { title, type: actualType, content: actualContent, language }
            });
