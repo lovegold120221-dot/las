@@ -457,24 +457,24 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         startWebcam();
     } else {
       const prompts: Record<string, string> = {
-        'tasks': "Pull up my Google Tasks and give me a quick overview of what's on my list.",
-        'calendar': "What's on my calendar today? Show me my schedule.",
-        'drive': "Find my recent files in Google Drive and show me what's there.",
-        'google': "Search the web for the latest AI and tech news and give me a quick rundown of the top stories.",
-        'signature': "I need a signature pad tool where I can draw my signature on screen.",
-        'company': "Ask me which company I want to look up first. Once I tell you the company name, search for their registration info, address, industry, and key people.",
-        'proposal': "I need a business proposal with sections for scope, timeline, and pricing, with a download button.",
-        'gmail': "Check my unread emails and summarize what's new in my inbox.",
+        'tasks': "List my tasks from Google Tasks for today using the list_tasks tool.",
+        'calendar': "List my calendar events for today using fetch_google_api with the calendar events endpoint.",
+        'drive': "List my recent files from Google Drive using the list_drive_files tool.",
+        'google': "Search for the latest tech news using google_search.",
+        'signature': "I need to sign a document. Guide me through creating a digital signature.",
+        'company': "Search for Ariolas BV registration info, address, industry, and key people.",
+        'proposal': "I need a business proposal for Ariolas BV with sections for scope, timeline, and pricing, with a download button.",
+        'gmail': "Check my unread emails from Gmail using fetch_google_api.",
         'sheets': "Create a new Google Sheet for tracking expenses and set it up with the right columns.",
-        'slides': "Build me a presentation template with a few slides I can flip through.",
-        'chat': "Show me my Google Chat spaces and summarize what's been going on in them.",
-        'forms': "Create a feedback form that's interactive with validation and a nice design.",
-        'keep': "Pull up my Google Keep notes and show me what I've saved.",
-        'contract': "I need a formal contract agreement with an e-signature feature. Make it look professional with a signature pad I can draw on.",
-        'invoice': "I need an invoice with line items, auto-calculated totals, and a download button.",
-        'contacts': "Show me my Google Contacts and help me find someone.",
+        'slides': "Build me a presentation template for Ariolas BV.",
+        'chat': "Show me my recent Google Chat messages using fetch_google_api.",
+        'forms': "Create a new Google Form for feedback using fetch_google_api.",
+        'keep': "List my Google Keep notes using fetch_google_api.",
+        'contract': "I need a formal contract agreement for Ariolas BV with an e-signature feature. Make it look professional with a signature pad I can draw on.",
+        'invoice': "I need an invoice for Ariolas BV with line items, auto-calculated totals, and a download button.",
+        'contacts': "List my Google Contacts using the list_contacts tool.",
         'firebase': "Create a Firebase-style dashboard with live data cards and activity feed.",
-        'docs': "Ask me what type of document I need and which company it's for. I can request contracts, NDAs, ToS, SoW, LOI, MOU, SLA, privacy policy, etc. Make it look professional with the company's name throughout and include a download button."
+        'docs': "I need a document for Ariolas BV. I can request contracts, NDAs, ToS, SoW, LOI, MOU, SLA, privacy policy, etc. Make it look professional with the company's name throughout and include a download button."
       };
       const prompt = prompts[toolId] || `Execute action: ${toolId}`;
       if (connected) {
