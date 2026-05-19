@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLiveAPIContext } from './contexts/LiveAPIContext';
 import { useLogStore, useTools, useSettings, useUI } from './lib/state';
@@ -182,7 +183,7 @@ export default function EburonApp() {
         const path = `users/${user.uid}`;
         try {
           const docRef = doc(db, 'users', user.uid);
-          let userDoc;
+          let userDoc = null;
           try {
             userDoc = await getDoc(docRef);
           } catch (e: any) {
@@ -190,12 +191,14 @@ export default function EburonApp() {
             // Try one more time if it's an offline error
             if (e.code === 'unavailable' || e.message.includes('offline')) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                userDoc = await getDoc(docRef);
-            } else {
-                throw e;
+                try {
+                    userDoc = await getDoc(docRef);
+                } catch (e2) {
+                    console.error('Firestore getDoc retry error:', e2);
+                }
             }
           }
-          if (userDoc.exists()) {
+          if (userDoc && userDoc.exists()) {
             const data = userDoc.data();
             if (data.memories) {
               setMemories(data.memories);
@@ -671,15 +674,22 @@ Output only natural spoken text. No stage directions, no brackets, no role label
         </nav>
       </div>
 
+      <AnimatePresence>
       {isMeetOpen && (
-        <div className="full-page-overlay meet-overlay active" style={{ backgroundColor: 'black', zIndex: 2000 }}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }} 
+          animate={{ opacity: 1, scale: 1 }} 
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="full-page-overlay meet-overlay active" 
+          style={{ backgroundColor: 'black', zIndex: 2000 }}>
           <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 2001, display: 'flex', gap: '10px' }}>                
             <button onClick={() => { if(isScreenShareActive) stopStream(); else startScreenShare(); }} style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><Cast size={24} color={isScreenShareActive ? 'var(--accent-active)' : "white"}/></button>
             <button onClick={() => { stopStream(); setIsMeetOpen(false); }} style={{ background: 'rgba(255,0,0,0.5)', borderRadius: '50%', border: 'none', padding: '10px', cursor: 'pointer' }}><X size={24} color="white"/></button>
           </div>
           <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Workspace & Artifact Overlay */}
       <div id="overlay-workspace" className={`full-page-overlay ${activeWorkspaceResult ? 'active' : ''}`}>
@@ -703,8 +713,9 @@ Output only natural spoken text. No stage directions, no brackets, no role label
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `${activeWorkspaceResult.artifact.title || 'document'}.md`;
+                        a.download = `${activeWorkspaceResult.artifact.title?.replace(/[^a-z0-9]/gi, '_') || 'document'}.md`;
                         a.click();
+                        URL.revokeObjectURL(url);
                       }}>Download Markdown</button>
                     </div>
                     <ReactMarkdown>{activeWorkspaceResult.artifact.content}</ReactMarkdown>
