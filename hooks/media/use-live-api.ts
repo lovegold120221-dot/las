@@ -115,6 +115,8 @@ export function useLiveApi({
           isFinal: true,
         });
 
+        console.log(`Tool call triggered: ${fc.name}`, fc.args);
+
         let responsePayload: any = { result: 'ok' };
         
         if (fc.name === 'fetch_google_api') {

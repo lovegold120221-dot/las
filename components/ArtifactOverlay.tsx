@@ -1,8 +1,22 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useUI } from '../lib/state';
+
+const DownloadButton = ({ content, title, type, ext }: { content: string, title: string, type: string, ext: string }) => (
+  <button className="flex items-center gap-2 pill-btn bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition" onClick={() => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title?.replace(/[^a-z0-9]/gi, '_') || 'document'}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }}>
+    <Download size={16} /> Download {ext.toUpperCase()}
+  </button>
+);
 
 export const ArtifactOverlay: React.FC = () => {
   const activeWorkspaceResult = useUI((state) => state.activeWorkspaceResult);
@@ -24,75 +38,54 @@ export const ArtifactOverlay: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-          className="full-page-overlay active"
+          className="fixed inset-0 z-50 flex flex-col bg-white shadow-2xl"
         >
-          <div className="overlay-header">
-            <div className="overlay-title">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-lg font-semibold text-gray-800">
               {isGenerating ? 'Beatrice is working...' : (activeWorkspaceResult?.artifact ? `Artifact: ${activeWorkspaceResult.artifact.title}` : 'Workspace Data')}
-            </div>
-            <button className="close-overlay-btn" onClick={closeOverlay}>
-              <X size={18} />
+            </h2>
+            <button className="p-2 rounded-full hover:bg-gray-100" onClick={closeOverlay}>
+              <X size={20} />
             </button>
           </div>
-          <div className="overlay-content" style={{ overflowY: 'auto', padding: '24px' }}>
+          <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
             {isGenerating ? (
-              <div className="artifact-viewer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-                <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border-color)', borderTopColor: 'var(--accent-active)', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
-                <p>Generating your document...</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4" />
+                <p>Generating your artifact...</p>
               </div>
             ) : activeWorkspaceResult?.artifact ? (
-              <div className="artifact-viewer" style={{ backgroundColor: 'white', color: 'black', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+              <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl border shadow-sm">
+                <div className="mb-6 flex gap-2">
+                  <DownloadButton 
+                    content={activeWorkspaceResult.artifact.content}
+                    title={activeWorkspaceResult.artifact.title || 'artifact'}
+                    type={activeWorkspaceResult.artifact.type === 'markdown' ? 'text/markdown' : 'text/plain'}
+                    ext={activeWorkspaceResult.artifact.type === 'markdown' ? 'md' : 'txt'}
+                  />
+                </div>
+                
                 {activeWorkspaceResult.artifact.type === 'html' && (
-                  <iframe srcDoc={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="HTML Preview" />
-                )}
-                {activeWorkspaceResult.artifact.type === 'pdf' && (
-                  <iframe src={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="PDF Preview" />
+                  <iframe srcDoc={activeWorkspaceResult.artifact.content} className="w-full h-[60vh] border rounded-lg" title="HTML Preview" />
                 )}
                 {activeWorkspaceResult.artifact.type === 'markdown' && (
-                  <div className="markdown-body">
-                    <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
-                      <button className="pill-btn" onClick={() => {
-                        const blob = new Blob([activeWorkspaceResult.artifact.content], { type: 'text/markdown' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${activeWorkspaceResult.artifact.title?.replace(/[^a-z0-9]/gi, '_') || 'document'}.md`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}>Download Markdown</button>
-                    </div>
+                  <div className="prose max-w-none">
                     <ReactMarkdown>{activeWorkspaceResult.artifact.content}</ReactMarkdown>
                   </div>
                 )}
-                {activeWorkspaceResult.artifact.type === 'code' && (
-                  <div className="artifact-viewer">
-                    <div style={{ paddingBottom: '16px', borderBottom: '1px solid var(--border-color)', marginBottom: '16px' }}>
-                        <button className="pill-btn" onClick={() => {
-                            const blob = new Blob([activeWorkspaceResult.artifact.content], { type: 'text/plain' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `${activeWorkspaceResult.artifact.title || 'code'}.txt`;
-                            a.click();
-                        }}>Download Code</button>
-                    </div>
-                    <pre style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px', overflowX: 'auto' }}>
-                      <code>{activeWorkspaceResult.artifact.content}</code>
-                    </pre>
-                  </div>
-                )}
                 {activeWorkspaceResult.artifact.type === 'structured' && (
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{activeWorkspaceResult.artifact.content}</div>
+                  <pre className="p-4 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono text-gray-800">
+                    {JSON.stringify(JSON.parse(activeWorkspaceResult.artifact.content), null, 2)}
+                  </pre>
                 )}
-                {activeWorkspaceResult.artifact.type === 'chart' && (
-                  <div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-                    [Chart Visualization Rendering: {activeWorkspaceResult.artifact.title}]
-                    <pre style={{ fontSize: '10px', textAlign: 'left' }}>{activeWorkspaceResult.artifact.content}</pre>
-                  </div>
+                {activeWorkspaceResult.artifact.type === 'code' && (
+                  <pre className="p-4 bg-gray-900 text-white rounded-lg overflow-x-auto text-sm font-mono">
+                    <code>{activeWorkspaceResult.artifact.content}</code>
+                  </pre>
                 )}
               </div>
             ) : (
-              <pre style={{ backgroundColor: '#111', padding: '16px', borderRadius: '8px', color: '#a3f01c', whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+              <pre className="p-4 bg-gray-900 rounded-lg text-green-400 overflow-x-auto text-xs">
                 {activeWorkspaceResult ? JSON.stringify(activeWorkspaceResult, null, 2) : ''}
               </pre>
             )}
