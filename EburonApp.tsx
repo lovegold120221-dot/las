@@ -105,11 +105,8 @@ export default function EburonApp() {
   
   const activeWorkspaceResult = useUI((state) => state.activeWorkspaceResult);
   const setActiveWorkspaceResult = useUI((state) => state.setActiveWorkspaceResult);
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  useEffect(() => {
-    setIsGenerating(false);
-  }, [activeWorkspaceResult]);
+  const isGenerating = useUI((state) => state.isGenerating);
+  const setIsGenerating = useUI((state) => state.setIsGenerating);
   
   const [micState, setMicState] = useState(false);
   const [clientVolume, setClientVolume] = useState(0);

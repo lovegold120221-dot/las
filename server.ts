@@ -191,7 +191,8 @@ async function startServer() {
     
     try {
       const headers: any = {
-        'Authorization': `Basic ${Buffer.from(`${process.env.GOWA_USERNAME}:${process.env.GOWA_PASSWORD}`).toString('base64')}`
+        'Authorization': `Basic ${Buffer.from(`${process.env.GOWA_USERNAME}:${process.env.GOWA_PASSWORD}`).toString('base64')}`,
+        'X-Device-Id': '92d5d59e-de02-4375-89ee-89bf58299b96'
       };
       if (process.env.GOWA_TRAEFIK_HOST) {
         headers['Host'] = process.env.GOWA_TRAEFIK_HOST;
@@ -211,7 +212,8 @@ async function startServer() {
     try {
       const headers: any = {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`${process.env.GOWA_USERNAME}:${process.env.GOWA_PASSWORD}`).toString('base64')}`
+        'Authorization': `Basic ${Buffer.from(`${process.env.GOWA_USERNAME}:${process.env.GOWA_PASSWORD}`).toString('base64')}`,
+        'X-Device-Id': '92d5d59e-de02-4375-89ee-89bf58299b96'
       };
       if (process.env.GOWA_TRAEFIK_HOST) {
         headers['Host'] = process.env.GOWA_TRAEFIK_HOST;

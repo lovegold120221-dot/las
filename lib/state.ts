@@ -394,6 +394,8 @@ export const useUI = create<{
   setActiveWorkspaceResult: (result: any) => void;
   activeOverlay: string | null;
   setActiveOverlay: (overlay: string | null) => void;
+  isGenerating: boolean;
+  setIsGenerating: (isGenerating: boolean) => void;
 }>(set => ({
   isSidebarOpen: true,
   toggleSidebar: () => set(state => ({ isSidebarOpen: !state.isSidebarOpen })),
@@ -401,6 +403,8 @@ export const useUI = create<{
   setActiveWorkspaceResult: (result) => set({ activeWorkspaceResult: result }),
   activeOverlay: null,
   setActiveOverlay: (overlay) => set({ activeOverlay: overlay }),
+  isGenerating: false,
+  setIsGenerating: (isGenerating) => set({ isGenerating }),
 }));
 
 /**

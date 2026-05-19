@@ -539,9 +539,11 @@ export function useLiveApi({
            
            responsePayload = { status: `${actualType.toUpperCase()} artifact generated successfully`, title };
            const uiState = await import('../../lib/state');
+           uiState.useUI.getState().setIsGenerating(true);
            uiState.useUI.getState().setActiveWorkspaceResult({
               artifact: { title, type: actualType, content: actualContent, language }
            });
+           uiState.useUI.getState().setIsGenerating(false);
         }
 
         if (fc.name === 'get_user_location') {
