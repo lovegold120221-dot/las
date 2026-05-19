@@ -224,6 +224,8 @@
 
     /* Action List for Profile */
     .danger-action { color: var(--accent-danger); font-weight: 600; padding: 16px; background: #2a1111; border-radius: 16px; text-align: center; margin-top: 24px; border: 1px solid #4a1c1c; }
+    
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* ---------------------------------------------------
        8. Authentication Screen (Dark Lime Theme)

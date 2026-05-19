@@ -105,6 +105,11 @@ export default function EburonApp() {
   
   const activeWorkspaceResult = useUI((state) => state.activeWorkspaceResult);
   const setActiveWorkspaceResult = useUI((state) => state.setActiveWorkspaceResult);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    setIsGenerating(false);
+  }, [activeWorkspaceResult]);
   
   const [micState, setMicState] = useState(false);
   const [clientVolume, setClientVolume] = useState(0);
@@ -187,8 +192,9 @@ export default function EburonApp() {
           try {
             userDoc = await getDoc(docRef);
           } catch (e: any) {
-            console.error('Firestore getDoc error:', e);
-            // Try one more time if it's an offline error
+            console.warn('Firestore getDoc warning:', e.message);
+            // If the document doesn't exist, it's fine for a new user.
+            // If it's an offline error, we try to retry once.
             if (e.code === 'unavailable' || e.message.includes('offline')) {
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 try {
@@ -203,6 +209,11 @@ export default function EburonApp() {
             if (data.memories) {
               setMemories(data.memories);
             }
+          } else {
+             // Document doesn't exist or we couldn't fetch it, 
+             // but that's okay, just start with empty memories.
+             console.log('User document not found or could not be fetched, starting fresh.');
+             setMemories([]);
           }
         } catch (e) {
           handleFirestoreError(e, OperationType.GET, path);
@@ -693,7 +704,7 @@ Output only natural spoken text. No stage directions, no brackets, no role label
 
       {/* Workspace & Artifact Overlay */}
       <AnimatePresence>
-      {activeWorkspaceResult && (
+      {(activeWorkspaceResult || isGenerating) && (
         <motion.div 
           id="overlay-workspace"
           initial={{ y: '100%', opacity: 0 }}
@@ -703,12 +714,17 @@ Output only natural spoken text. No stage directions, no brackets, no role label
           className="full-page-overlay active">
         <div className="overlay-header">
           <div className="overlay-title">
-            {activeWorkspaceResult?.artifact ? `Artifact: ${activeWorkspaceResult.artifact.title}` : 'Workspace Data'}
+            {isGenerating ? 'Beatrice is working...' : (activeWorkspaceResult?.artifact ? `Artifact: ${activeWorkspaceResult.artifact.title}` : 'Workspace Data')}
           </div>
-          <button className="close-overlay-btn" onClick={() => setActiveWorkspaceResult(null)}><X size={18} /></button>
+          <button className="close-overlay-btn" onClick={() => { setActiveWorkspaceResult(null); setIsGenerating(false); }}><X size={18} /></button>
         </div>
         <div className="overlay-content" style={{ overflowY: 'auto', padding: '24px' }}>
-           {activeWorkspaceResult?.artifact ? (
+           {isGenerating ? (
+             <div className="artifact-viewer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+               <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid var(--border-color)', borderTopColor: 'var(--accent-active)', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
+               <p>Generating your document...</p>
+             </div>
+           ) : activeWorkspaceResult?.artifact ? (
              <div className="artifact-viewer" style={{ backgroundColor: 'white', color: 'black', padding: '32px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
                 {activeWorkspaceResult.artifact.type === 'html' && (
                   <iframe srcDoc={activeWorkspaceResult.artifact.content} style={{ width: '100%', height: '100%', border: 'none' }} title="HTML Preview" />
