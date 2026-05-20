@@ -730,6 +730,9 @@ export function useLiveApi({
     }
     client.disconnect();
     await client.connect(config);
+    if (audioStreamerRef.current) {
+        await audioStreamerRef.current.resume();
+    }
   }, [client, config]);
 
   const disconnect = useCallback(async () => {
